@@ -178,7 +178,7 @@ export class TwirpServer<
     req: http.IncomingMessage,
     resp: http.ServerResponse
   ) {
-    const ctx = this.createContext(req, resp);
+    let ctx = this.createContext(req, resp);
 
     try {
       await this.invokeHook("requestReceived", ctx);
@@ -190,7 +190,11 @@ export class TwirpServer<
       );
 
       const handler = this.matchRoute(method, {
-        onMatch: (ctx) => {
+        onMatch: (_ctx) => {
+          // Update parent context with the matched context so that the
+          // matched handler details are included
+          ctx = _ctx
+
           return this.invokeHook("requestRouted", ctx);
         },
         onNotFound: () => {
